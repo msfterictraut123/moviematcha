@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movie Match - Simple Web</title>
+  <style>
+    :root {
+      --bg: #fff7f2;
+      --card: #ffffff;
+      --ink: #2f2430;
+      --muted: #6d5d6f;
+      --pink: #ea4c89;
+      --pink-2: #ff7ca5;
+      --ok: #27ae60;
+      --no: #d64550;
+      --border: #f2d6e2;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Nunito", sans-serif;
+      background: linear-gradient(135deg, #fff6eb, #fff0f6 50%, #f7fbff);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .app {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .guide {
+      max-width: 760px;
+      margin: 0 auto 12px;
+      background: #ffffffd9;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 6px 16px rgba(100, 64, 90, 0.07);
+    }
+
+    .guide h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .guide ol {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 8px 20px rgba(100, 64, 90, 0.08);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 3vw, 1.9rem);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 4px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #a03a67;
+      white-space: nowrap;
+    }
+
+    .input, .file {
+      width: 100%;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.9rem;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn {
+      width: 100%;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 10px;
+      background: linear-gradient(90deg, var(--pink), var(--pink-2));
+    }
+
+    .btn.secondary {
+      background: #fff;
+      border: 1px solid var(--border);
+      color: #9b3b68;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .list {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 52px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      background: #fff;
+    }
+
+    .thumb {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #f1e5ed;
+      background: #f6f6f6;
+    }
+
+    .small {
+      border: 0;
+      border-radius: 8px;
+      padding: 6px 8px;
+      background: #ffe9f1;
+      color: #9e3e6a;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .movie-card {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .poster {
+      width: 100%;
+      height: min(52vw, 340px);
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid #f1e4ed;
+      background: #f3f3f3;
+    }
+
+    .meta {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.88rem;
+      color: var(--muted);
+      gap: 8px;
+    }
+
+    .actions {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .vote {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .vote.no { background: var(--no); }
+    .vote.yes { background: var(--ok); }
+
+    .match {
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .match h2 {
+      margin: 4px 0;
+      color: #b32562;
+    }
+
+    .history {
+      margin-top: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      padding: 10px;
+      font-size: 0.86rem;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .hrow {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      border-bottom: 1px dashed #f0d9e6;
+      padding-bottom: 6px;
+      margin-bottom: 6px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 620px) {
+      .row { grid-template-columns: 1fr; }
+      .title-row { align-items: start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <section class="guide">
+    <h2>How to use Movie Match</h2>
+    <ol>
+      <li>Enter both names and click <strong>Continue</strong>.</li>
+      <li>Person 1 adds 5 movies (title + poster image upload).</li>
+      <li>Hand over the device, then Person 2 adds 5 movies.</li>
+      <li>Click <strong>Start Matching</strong> to shuffle all 10 movies.</li>
+      <li>For each movie, both people vote <strong>Yes</strong> or <strong>No</strong>.</li>
+      <li>If both vote <strong>Yes</strong> on the same movie, you get a match.</li>
+      <li>Check the dashboard for the selected movie and round history.</li>
+    </ol>
+  </section>
+  <main class="app panel" id="app"></main>
+
+  <script>
+    const app = document.getElementById("app");
+
+    const state = {
+      screen: "onboarding",
+      players: [
+        { name: "Alex", picks: [] },
+        { name: "Jamie", picks: [] }
+      ],
+      submitTurn: 0,
+      deck: [],
+      index: 0,
+      voter: 0,
+      selectedMovie: null,
+      history: []
+    };
+
+    function setScreen(next) {
+      state.screen = next;
+      render();
+    }
+
+    function shuffle(list) {
+      const a = [...list];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function currentMovie() {
+      return state.deck[state.index] || null;
+    }
+
+    function buildDeck() {
+      const all = [];
+      state.players.forEach((p, pi) => {
+        p.picks.forEach((m, i) => {
+          all.push({
+            id: `${pi}-${i}-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+            title: m.title,
+            imageUrl: m.imageUrl,
+            by: p.name,
+            votes: {}
+          });
+        });
+      });
+      state.deck = shuffle(all);
+      state.index = 0;
+      state.voter = 0;
+      state.selectedMovie = null;
+      state.history = [];
+    }
+
+    function vote(decision) {
+      const movie = currentMovie();
+      if (!movie) {
+        setScreen("dashboard");
+        return;
+      }
+
+      movie.votes[state.voter] = decision;
+
+      if (state.voter === 0) {
+        state.voter = 1;
+        renderSwipe();
+        return;
+      }
+
+      const a = movie.votes[0];
+      const b = movie.votes[1];
+      const match = a === "yes" && b === "yes";
+
+      state.history.push({
+        title: movie.title,
+        by: movie.by,
+        a,
+        b,
+        result: match ? "MATCH" : "No match"
+      });
+
+      if (match && !state.selectedMovie) {
+        state.selectedMovie = movie;
+        setScreen("match");
+        return;
+      }
+
+      state.index += 1;
+      state.voter = 0;
+
+      if (!currentMovie()) setScreen("dashboard");
+      else renderSwipe();
+    }
+
+    function renderOnboarding() {
+      app.innerHTML = `
+        <div class="title-row">
+          <div>
+            <h1>Movie Match</h1>
+            <div class="muted">Simple website version: upload movie picture + title, then vote yes/no.</div>
+          </div>
+          <span class="tag">Couples Mode</span>
+        </div>
+
+        <div class="row">
+          <input class="input" id="name0" maxlength="18" value="${state.players[0].name}" placeholder="Person 1 name" />
+          <input class="input" id="name1" maxlength="18" value="${state.players[1].name}" placeholder="Person 2 name" />
+        </div>
+
+        <button class="btn" id="goSubmit">Continue</button>
+      `;
+
+      document.getElementById("goSubmit").onclick = () => {
+        state.players[0].name = document.getElementById("name0").value.trim() || "Person 1";
+        state.players[1].name = document.getElementById("name1").value.trim() || "Person 2";
+        state.players.forEach((p) => p.picks = []);
+        state.submitTurn = 0;
+        setScreen("submit");
+      };
+    }
+
+    function renderSubmit() {
+      const active = state.players[state.submitTurn];
+      const other = state.players[state.submitTurn === 0 ? 1 : 0];
+      const full = active.picks.length >= 5;
+      const bothFull = state.players.every((p) => p.picks.length === 5);
+
+      const rows = active.picks.map((m, i) => `
+        <div class="item">
+          <img class="thumb" src="${m.imageUrl}" alt="${m.title}">
+          <div>${m.title}</div>
+          <button class="small" data-remove="${i}">Remove</button>
+        </div>
+      `).join("") || `<div class="item"><div></div><div>No movies added yet.</div><div></div></div>`;
+
+      app.innerHTML = `
+        <div class="title-row">
+          <div>
+            <h1>${active.name}'s picks (${active.picks.length}/5)</h1>
+            <div class="muted">Upload a movie image and add a title.</div>
+          </div>
+          <span class="tag">${other.name}: ${other.picks.length}/5</span>
+        </div>
+
+        <input class="input" id="movieTitle" placeholder="Movie title" ${full ? "disabled" : ""}>
+        <input class="file" id="movieImage" type="file" accept="image/*" ${full ? "disabled" : ""}>
+        <button class="btn" id="addMovie" ${full ? "disabled" : ""}>Add Movie</button>
+
+        <div class="list">${rows}</div>
+
+        <button class="btn secondary ${bothFull ? "hidden" : ""}" id="switchUser" ${full ? "" : "disabled"}>
+          ${state.submitTurn === 0 ? `Hand over to ${other.name}` : `Back to ${other.name}`}
+        </button>
+
+        <button class="btn ${bothFull ? "" : "hidden"}" id="startSwipe">Start Matching</button>
+        <button class="btn secondary" id="backNames">Edit Names</button>
+      `;
+
+      document.querySelectorAll("[data-remove]").forEach((btn) => {
+        btn.onclick = () => {
+          const idx = Number(btn.dataset.remove);
+          const item = active.picks[idx];
+          if (item && item.imageUrl.startsWith("blob:")) URL.revokeObjectURL(item.imageUrl);
+          active.picks.splice(idx, 1);
+          renderSubmit();
+        };
+      });
+
+      document.getElementById("addMovie").onclick = () => {
+        const title = document.getElementById("movieTitle").value.trim();
+        const file = document.getElementById("movieImage").files[0];
+        if (!title || !file || active.picks.length >= 5) return;
+
+        active.picks.push({
+          title,
+          imageUrl: URL.createObjectURL(file)
+        });
+
+        renderSubmit();
+      };
+
+      const switchBtn = document.getElementById("switchUser");
+      if (switchBtn) {
+        switchBtn.onclick = () => {
+          state.submitTurn = state.submitTurn === 0 ? 1 : 0;
+          renderSubmit();
+        };
+      }
+
+      const startBtn = document.getElementById("startSwipe");
+      if (startBtn) {
+        startBtn.onclick = () => {
+          buildDeck();
+          setScreen("swipe");
+        };
+      }
+
+      document.getElementById("backNames").onclick = () => setScreen("onboarding");
+    }
+
+    function renderSwipe() {
+      const movie = currentMovie();
+      if (!movie) {
+        setScreen("dashboard");
+        return;
+      }
+
+      const voterName = state.players[state.voter].name;
+
+      app.innerHTML = `
+        <div class="title-row">
+          <div>
+            <h1>Vote: ${voterName}</h1>
+            <div class="muted">Movie ${state.index + 1} of ${state.deck.length}</div>
+          </div>
+          <span class="tag">Picked by ${movie.by}</span>
+        </div>
+
+        <div class="movie-card">
+          <img class="poster" src="${movie.imageUrl}" alt="${movie.title}">
+          <div class="meta">
+            <strong>${movie.title}</strong>
+            <span>Swipe idea: use buttons below</span>
+          </div>
+          <div class="actions">
+            <button class="vote no" id="no">No</button>
+            <button class="vote yes" id="yes">Yes</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("no").onclick = () => vote("no");
+      document.getElementById("yes").onclick = () => vote("yes");
+    }
+
+    function renderMatch() {
+      const m = state.selectedMovie;
+      if (!m) {
+        setScreen("dashboard");
+        return;
+      }
+
+      app.innerHTML = `
+        <div class="title-row">
+          <div>
+            <h1>Match Found</h1>
+            <div class="muted">Both said yes to the same movie.</div>
+          </div>
+          <span class="tag">Success</span>
+        </div>
+
+        <div class="match">
+          <img class="poster" src="${m.imageUrl}" alt="${m.title}">
+          <h2>💖 ${m.title}</h2>
+          <div class="muted">Picked by ${m.by}</div>
+          <button class="btn" id="goDash">Go to Dashboard</button>
+          <button class="btn secondary" id="continueSwipe">Continue Voting</button>
+        </div>
+      `;
+
+      document.getElementById("goDash").onclick = () => setScreen("dashboard");
+      document.getElementById("continueSwipe").onclick = () => {
+        state.index += 1;
+        state.voter = 0;
+        if (!currentMovie()) setScreen("dashboard");
+        else setScreen("swipe");
+      };
+    }
+
+    function renderDashboard() {
+      const h = state.history.map((r) => `
+        <div class="hrow">
+          <span>${r.title}<br><small>${state.players[0].name}: ${r.a} | ${state.players[1].name}: ${r.b}</small></span>
+          <strong>${r.result}</strong>
+        </div>
+      `).join("") || `<div class="hrow"><span>No votes yet.</span><strong>-</strong></div>`;
+
+      app.innerHTML = `
+        <div class="title-row">
+          <div>
+            <h1>Dashboard</h1>
+            <div class="muted">Simple summary of this round.</div>
+          </div>
+          <span class="tag">${state.history.length} voted</span>
+        </div>
+
+        <div class="panel" style="padding:10px; border-radius:10px; box-shadow:none; margin-top:6px;">
+          <strong>Selected movie:</strong> ${state.selectedMovie ? state.selectedMovie.title : "No match found"}
+        </div>
+
+        <div class="history">
+          <strong>Round history</strong>
+          <div style="margin-top:8px;">${h}</div>
+        </div>
+
+        <button class="btn" id="newRound">New Round (same picks)</button>
+        <button class="btn secondary" id="newPicks">Start Over</button>
+      `;
+
+      document.getElementById("newRound").onclick = () => {
+        buildDeck();
+        setScreen("swipe");
+      };
+
+      document.getElementById("newPicks").onclick = () => {
+        state.players.forEach((p) => {
+          p.picks.forEach((m) => {
+            if (m.imageUrl.startsWith("blob:")) URL.revokeObjectURL(m.imageUrl);
+          });
+          p.picks = [];
+        });
+        state.submitTurn = 0;
+        state.deck = [];
+        state.index = 0;
+        state.voter = 0;
+        state.selectedMovie = null;
+        state.history = [];
+        setScreen("submit");
+      };
+    }
+
+    function render() {
+      if (state.screen === "onboarding") return renderOnboarding();
+      if (state.screen === "submit") return renderSubmit();
+      if (state.screen === "swipe") return renderSwipe();
+      if (state.screen === "match") return renderMatch();
+      if (state.screen === "dashboard") return renderDashboard();
+    }
+
+    render();
+  </script>
+</body>
+</html>
